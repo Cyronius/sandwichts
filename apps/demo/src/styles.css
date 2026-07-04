@@ -1,36 +1,136 @@
 :root {
     color-scheme: light dark;
     font-family: "Segoe UI", system-ui, sans-serif;
+    --accent: #6b8afd;
+    --line: color-mix(in srgb, currentColor 16%, transparent);
+    --panel: color-mix(in srgb, currentColor 6%, transparent);
 }
 
 * { box-sizing: border-box; }
-
 body { margin: 0; }
-
-.shell { min-height: 100vh; }
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
 
 .topbar {
     display: flex;
     align-items: baseline;
     gap: 1rem;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    padding: 0.7rem 1.25rem;
+    border-bottom: 2px solid var(--accent);
+}
+.topbar h1 { font-size: 1.05rem; margin: 0; letter-spacing: 0.02em; }
+.logo-sub { font-weight: 400; opacity: 0.65; }
+.tag { font-size: 0.78rem; opacity: 0.7; text-decoration: none; margin-left: auto; }
+.tag + .tag { margin-left: 0; }
+
+.layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: 0;
 }
 
-.topbar h1 { font-size: 1.1rem; margin: 0; }
-
-.tag {
-    font-size: 0.8rem;
-    opacity: 0.7;
+/* ---- board ---- */
+.board { padding: 1.25rem; overflow: auto; }
+.board-title {
+    margin: 0 0 1rem;
+    font-size: 1.3rem;
+    border-left: 5px solid var(--accent);
+    padding-left: 0.6rem;
 }
+.columns { display: flex; gap: 1rem; align-items: flex-start; }
+.column {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.75rem;
+    width: 240px;
+    flex-shrink: 0;
+}
+.column h3 { margin: 0 0 0.6rem; font-size: 0.9rem; opacity: 0.85; }
+.count { opacity: 0.5; font-weight: 400; }
+.card {
+    background: color-mix(in srgb, currentColor 4%, transparent);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 7px;
+    padding: 0.55rem 0.65rem;
+    margin-bottom: 0.5rem;
+}
+.card-title { font-size: 0.86rem; }
+.card-desc { font-size: 0.76rem; opacity: 0.7; margin-top: 0.25rem; }
 
+/* ---- chat ---- */
+.chat {
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.dev-toggle { font-weight: 400; font-size: 0.75rem; opacity: 0.7; display: flex; gap: 0.3rem; align-items: center; }
+.chat-messages { flex: 1; overflow: auto; padding: 0.9rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.bubble {
+    max-width: 92%;
+    padding: 0.5rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.bubble.user { align-self: flex-end; background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.bubble.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
+.bubble.error { align-self: stretch; background: color-mix(in srgb, crimson 15%, transparent); font-size: 0.78rem; }
+.dots { opacity: 0.6; font-style: italic; }
+.code-peek summary, .dev-panel summary { cursor: pointer; font-size: 0.75rem; opacity: 0.65; }
+.code-peek pre, .dev-panel pre {
+    background: color-mix(in srgb, currentColor 9%, transparent);
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-size: 0.72rem;
+    overflow: auto;
+    max-height: 220px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.dev-panel { border-top: 1px solid var(--line); padding: 0.5rem 0.9rem; }
+.chat-input { display: flex; gap: 0.5rem; padding: 0.7rem 0.9rem; border-top: 1px solid var(--line); }
+.chat-input input {
+    flex: 1;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.85rem;
+}
+.chat-input button {
+    padding: 0.5rem 0.9rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.chat-input button:disabled { opacity: 0.5; cursor: default; }
+.chat-input button.stop { background: #c25b5b; }
+
+/* ---- playground (Phase 2 harness) ---- */
 .playground-grid {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 1.5rem;
     padding: 1.5rem;
 }
-
 .playground-grid button {
     display: block;
     width: 100%;
@@ -38,13 +138,17 @@ body { margin: 0; }
     padding: 0.5rem 0.75rem;
     cursor: pointer;
 }
-
 .playground-grid pre {
-    background: color-mix(in srgb, currentColor 8%, transparent);
+    background: var(--panel);
     padding: 0.75rem;
     border-radius: 6px;
     max-height: 320px;
     overflow: auto;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+@media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .chat { border-left: none; border-top: 1px solid var(--line); max-height: 50vh; }
 }

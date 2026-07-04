@@ -1,3 +1,5 @@
+import { Board } from './Board';
+import { Chat } from './Chat';
 import { Playground } from './Playground';
 
 export function App() {
@@ -5,16 +7,18 @@ export function App() {
     if (params.has('playground')) {
         return <Playground />;
     }
+    const mode = params.has('mock') ? 'mock' : params.has('customEvent') ? 'custom-event' : 'live';
     return (
-        <div className="shell">
+        <div className="shell taskboard">
             <header className="topbar">
-                <h1>SandwichTS</h1>
-                <span className="tag">TaskBoard demo — coming in Phase 6</span>
+                <h1>SandwichTS <span className="logo-sub">TaskBoard</span></h1>
+                <span className="tag">code-mode demo · {mode}</span>
+                <a className="tag" href="/?playground=1">sandbox playground →</a>
             </header>
-            <p style={{ padding: '2rem' }}>
-                The chat-driven TaskBoard lands in Phase 6. Until then, the sandbox
-                playground is at <a href="/?playground=1">/?playground=1</a>.
-            </p>
+            <main className="layout">
+                <Board />
+                <Chat />
+            </main>
         </div>
     );
 }

@@ -9,11 +9,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ag-ui/client": "^0.0.47",
+    "@ag-ui/core": "^0.0.47",
+    "@itkennel/lm-ag-ui": "^1.0.268",
     "@sandwichts/core": "workspace:*",
+    "@sandwichts/react": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@sandwichts/server": "workspace:*",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
