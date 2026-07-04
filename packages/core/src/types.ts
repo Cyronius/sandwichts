@@ -71,6 +71,8 @@ export interface Sandbox {
         context?: unknown,
         options?: RunScriptOptions,
     ) => Promise<RunScriptResult>;
+    /** Fail the in-flight run (if any) and terminate its worker. */
+    abort: () => void;
     dispose: () => void;
 }
 

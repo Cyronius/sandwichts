@@ -122,7 +122,7 @@ and resolves with a timeout error the loop can resubmit. `dispose()` removes the
 - happy path: script calls whitelisted fns, transcript records name/args/result per call
 - `while(true){}` script → watchdog kills worker at ~timeout, page stays responsive
 - script referencing an unlisted fn → ReferenceError/Unknown-function error in result
-- mutating the context binding throws (frozen); `fetch` is not defined in script scope
+- mutating the context binding throws (frozen); an absolute-URL `fetch` from script scope fails (CSP-blocked — `fetch` exists in WorkerGlobalScope, the srcdoc CSP is the network boundary)
 - two sandboxes running concurrently do not cross-deliver messages (MessageChannel isolation)
 
 ### SW-SANDBOX-HARDENING: Sandbox message-security posture
