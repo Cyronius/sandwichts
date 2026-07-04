@@ -1,0 +1,32 @@
+{
+  "name": "@sandwichts/react",
+  "version": "0.1.0",
+  "description": "React bindings for SandwichTS code-mode chat: event-driven chat state, code hiding, dev code peek.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --external react,@sandwichts/core",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@sandwichts/core": "workspace:^",
+    "react": "^18 || ^19"
+  },
+  "devDependencies": {
+    "@sandwichts/core": "workspace:*",
+    "@types/react": "^18.3.0",
+    "react": "^18.3.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}

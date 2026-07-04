@@ -1,0 +1,30 @@
+{
+  "name": "@sandwichts/server",
+  "version": "0.1.0",
+  "description": "Server helpers for SandwichTS: remote-tool endpoint and a minimal AG-UI SSE agent backend (Anthropic).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --external @sandwichts/core",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@sandwichts/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@sandwichts/core": "workspace:*",
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
