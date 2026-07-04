@@ -60,21 +60,19 @@ export function sandwichBackend(): Plugin {
         name: 'sandwich-backend',
         configureServer(server) {
             const env = loadEnv(server.config.mode, server.config.envDir ?? process.cwd(), '');
-            const apiKey = env.ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY ?? '';
+            const pick = (name: string) => env[name] ?? process.env[name] ?? '';
             const toolHandler = createToolEndpoint(REMOTE_TOOLS);
 
             server.middlewares.use(async (req, res, next) => {
                 const url = req.url ?? '';
                 try {
                     if (url.startsWith('/api/agent/') && req.method === 'POST') {
-                        if (!apiKey) {
-                            res.statusCode = 500;
-                            res.end('ANTHROPIC_API_KEY missing — set it in apps/demo/.env or use ?mock=1');
-                            return;
-                        }
+                        // Any OpenAI-compatible target: hosted (key) or local (no key).
+                        // Auth failures surface as RUN_ERROR in the chat with a hint.
                         const agentHandler = createAguiBackend({
-                            apiKey,
-                            model: env.SANDWICH_MODEL || 'claude-sonnet-5',
+                            model: pick('SANDWICH_MODEL') || 'gpt-4o-mini',
+                            baseUrl: pick('SANDWICH_BASE_URL') || 'https://api.openai.com/v1',
+                            apiKey: pick('OPENAI_API_KEY') || undefined,
                             // ?customEvent=1 rides in via the client's configParams
                             emitScriptEvents: url.includes('customEvent=1'),
                         });

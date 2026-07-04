@@ -32,7 +32,7 @@ dozens of tool-call round trips and intermediate data never transits the model.
 |---|---|
 | `@sandwichts/core` | The engine: sandbox host + worker runtime, agentic loop, prompt rendering (`buildJsApi`, driving guide), session + events, `remoteTool`. Zero runtime deps; `@ag-ui/client` types only. |
 | `@sandwichts/react` | `useCodeModeChat` — event-driven chat state, code hiding, dev code peek. |
-| `@sandwichts/server` | WHATWG handlers: `createToolEndpoint` (remote-tool RPC) and `createAguiBackend` (minimal AG-UI SSE backend over Anthropic, for demos/quick starts). |
+| `@sandwichts/server` | WHATWG handlers: `createToolEndpoint` (remote-tool RPC) and `createAguiBackend` (minimal AG-UI SSE backend over any OpenAI-compatible Chat Completions API — OpenAI, Ollama, LM Studio, vLLM, OpenRouter — for demos/quick starts). |
 | `apps/demo` | TaskBoard — a kanban board driven end-to-end by code mode. The e2e verification artifact. |
 
 ## Quick start
@@ -44,9 +44,10 @@ pnpm test                 # 80+ unit tests over specs/**/tests
 pnpm dev                  # demo at http://localhost:5173
 ```
 
-Demo modes: `?mock=1` (scripted model, offline, deterministic), default (live Anthropic —
-copy `apps/demo/.env.example` to `.env` and set `ANTHROPIC_API_KEY`), `?customEvent=1`
-(backend emits `code_mode.script` CUSTOM events), `?playground=1` (raw sandbox scenarios).
+Demo modes: `?mock=1` (scripted model, offline, deterministic), default (live model —
+copy `apps/demo/.env.example` to `.env` and point it at OpenAI or a local LM via
+`SANDWICH_BASE_URL`/`SANDWICH_MODEL`/`OPENAI_API_KEY`), `?customEvent=1` (backend emits
+`code_mode.script` CUSTOM events), `?playground=1` (raw sandbox scenarios).
 
 ## Usage
 

@@ -1,34 +1,37 @@
 /**
- * aguiBackend — a minimal AG-UI SSE agent backend over the Anthropic Messages
- * API (SW-AGUI-BACKEND).
+ * aguiBackend — a minimal AG-UI SSE agent backend over any OpenAI-compatible
+ * Chat Completions API (SW-AGUI-BACKEND).
+ *
+ * OpenAI-compatible is the de facto abstraction layer: OpenAI/ChatGPT,
+ * Ollama, LM Studio, llama.cpp, vLLM, OpenRouter, … all speak it, so one
+ * `baseUrl` swap covers hosted and local models alike (`apiKey` is optional —
+ * local servers don't need one).
  *
  * Implements exactly the slice of the AG-UI HttpAgent contract a code-mode
- * frontend needs: accept a `RunAgentInput` POST, run the conversation against
- * Anthropic (system message → `system` param, user/assistant history →
- * `messages`, streaming), and emit `data: {json}` SSE events —
- * RUN_STARTED, TEXT_MESSAGE_START/CONTENT/END, optional CUSTOM
- * `code_mode.script`, RUN_FINISHED (RUN_ERROR on failure).
+ * frontend needs: accept a `RunAgentInput` POST, run the conversation
+ * upstream (streaming), and emit `data: {json}` SSE events — RUN_STARTED,
+ * TEXT_MESSAGE_START/CONTENT/END, optional CUSTOM `code_mode.script`,
+ * RUN_FINISHED (RUN_ERROR on failure).
  *
  * Native tools are NEVER forwarded to the LLM — SW-BACKEND-GATE holds by
  * construction, matching what lm-python-functions does when it sees
  * `forwardedProps.codeMode`.
  *
  * This is the demo/quick-start backend. Production deployments with existing
- * agent infra (lm-python-functions etc.) keep their own backend and just
- * honor the codeMode flag.
+ * agent infra keep their own backend and just honor the codeMode flag.
  */
 import { extractCode, messageContentToString } from '@sandwichts/core';
 
 export interface AguiBackendOptions {
-    /** Anthropic API key — stays server-side. */
-    apiKey: string;
-    /** Default 'claude-sonnet-5'. */
-    model?: string;
+    /** Upstream model name — REQUIRED (OpenAI: gpt-4o-mini, Ollama: llama3.2, …). */
+    model: string;
+    /** OpenAI-compatible root, default 'https://api.openai.com/v1'. Ollama: 'http://localhost:11434/v1'. */
+    baseUrl?: string;
+    /** Optional — sent as `Authorization: Bearer` when present; local servers need none. */
+    apiKey?: string;
     maxTokens?: number;
     /** Emit a CUSTOM code_mode.script event when the reply contains a ```js block (SW-CODE-CHANNEL). */
     emitScriptEvents?: boolean;
-    /** Override the Anthropic endpoint (tests, proxies). */
-    anthropicUrl?: string;
     /** Injectable for tests; defaults to global fetch. */
     fetchImpl?: typeof fetch;
 }
@@ -41,32 +44,32 @@ interface RunAgentInput {
     forwardedProps?: Record<string, unknown>;
 }
 
-/** Map the AG-UI wire history onto Anthropic's system + messages params. */
-export function mapMessages(history: WireMessage[]): {
-    system: string | undefined;
-    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
-} {
-    const systems: string[] = [];
-    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+type ChatRole = 'system' | 'user' | 'assistant';
+
+/**
+ * Map the AG-UI wire history onto Chat Completions messages. System messages
+ * stay inline; consecutive same-role turns are merged (harmless on OpenAI,
+ * helps strict local chat templates — transcript user-turns follow user
+ * turns); tool/unknown roles are dropped (code mode never produces them).
+ */
+export function mapMessages(history: WireMessage[]): Array<{ role: ChatRole; content: string }> {
+    const messages: Array<{ role: ChatRole; content: string }> = [];
     for (const m of history) {
         const text = messageContentToString(m.content);
         if (!text) continue;
-        if (m.role === 'system' || m.role === 'developer') {
-            systems.push(text);
-        } else if (m.role === 'user' || m.role === 'assistant') {
-            // Anthropic requires alternating turns; merge consecutive
-            // same-role messages (transcript user-turns follow user turns).
-            const prev = messages[messages.length - 1];
-            if (prev && prev.role === m.role) prev.content += `\n\n${text}`;
-            else messages.push({ role: m.role, content: text });
-        }
-        // tool/other roles are dropped — code mode never produces them.
+        const role: ChatRole | null = m.role === 'system' || m.role === 'developer'
+            ? 'system'
+            : m.role === 'user' || m.role === 'assistant' ? m.role : null;
+        if (!role) continue;
+        const prev = messages[messages.length - 1];
+        if (prev && prev.role === role) prev.content += `\n\n${text}`;
+        else messages.push({ role, content: text });
     }
-    return { system: systems.length ? systems.join('\n\n') : undefined, messages };
+    return messages;
 }
 
-/** Parse an Anthropic SSE stream, invoking onDelta per text delta. */
-async function readAnthropicStream(
+/** Parse an OpenAI-compatible SSE stream, invoking onDelta per content delta. */
+async function readSseStream(
     body: ReadableStream<Uint8Array>,
     onDelta: (text: string) => void,
 ): Promise<void> {
@@ -86,11 +89,11 @@ async function readAnthropicStream(
                 if (!payload || payload === '[DONE]') continue;
                 try {
                     const event = JSON.parse(payload);
-                    if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-                        onDelta(String(event.delta.text ?? ''));
-                    } else if (event.type === 'error') {
-                        throw new Error(event.error?.message ?? 'Anthropic stream error');
+                    if (event.error) {
+                        throw new Error(event.error?.message ?? 'upstream stream error');
                     }
+                    const delta = event.choices?.[0]?.delta?.content;
+                    if (typeof delta === 'string' && delta) onDelta(delta);
                 } catch (err) {
                     if (err instanceof SyntaxError) continue; // partial/keepalive
                     throw err;
@@ -102,13 +105,14 @@ async function readAnthropicStream(
 
 export function createAguiBackend(opts: AguiBackendOptions): (req: Request) => Promise<Response> {
     const {
+        model,
+        baseUrl = 'https://api.openai.com/v1',
         apiKey,
-        model = 'claude-sonnet-5',
-        maxTokens = 4096,
+        maxTokens,
         emitScriptEvents = false,
-        anthropicUrl = 'https://api.anthropic.com/v1/messages',
         fetchImpl,
     } = opts;
+    const endpoint = `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
 
     return async (req: Request): Promise<Response> => {
         if (req.method !== 'POST') {
@@ -123,7 +127,7 @@ export function createAguiBackend(opts: AguiBackendOptions): (req: Request) => P
         const threadId = input.threadId ?? 'thread';
         const runId = input.runId ?? 'run';
         const messageId = `msg_${runId}`;
-        const { system, messages } = mapMessages(input.messages ?? []);
+        const messages = mapMessages(input.messages ?? []);
 
         const encoder = new TextEncoder();
         const stream = new ReadableStream<Uint8Array>({
@@ -136,28 +140,25 @@ export function createAguiBackend(opts: AguiBackendOptions): (req: Request) => P
                 let started = false;
                 try {
                     const doFetch = fetchImpl ?? fetch;
-                    const upstream = await doFetch(anthropicUrl, {
+                    const upstream = await doFetch(endpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'x-api-key': apiKey,
-                            'anthropic-version': '2023-06-01',
+                            ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
                         },
                         body: JSON.stringify({
                             model,
-                            max_tokens: maxTokens,
                             stream: true,
-                            ...(system ? { system } : {}),
+                            ...(maxTokens ? { max_tokens: maxTokens } : {}),
                             messages,
                             // NO tools — the model must write JS (SW-BACKEND-GATE).
                         }),
                     });
                     if (!upstream.ok || !upstream.body) {
                         const detail = await upstream.text().catch(() => upstream.statusText);
-                        throw new Error(`Anthropic request failed (${upstream.status}): ${detail}`);
+                        throw new Error(`Upstream request failed (${upstream.status}): ${detail}`);
                     }
-                    await readAnthropicStream(upstream.body, (delta) => {
-                        if (!delta) return;
+                    await readSseStream(upstream.body, (delta) => {
                         if (!started) {
                             started = true;
                             emit({ type: 'TEXT_MESSAGE_START', messageId, role: 'assistant' });

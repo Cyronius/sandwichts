@@ -10,6 +10,9 @@ export default defineConfig({
             '@sandwichts/react': r('./packages/react/src/index.ts'),
             '@sandwichts/server': r('./packages/server/src/index.ts'),
         },
+        // One React instance for hook tests — package-local devDep copies of
+        // react must not coexist with the root copy the test renderer uses.
+        dedupe: ['react', 'react-dom'],
     },
     test: {
         include: ['specs/**/tests/**/*.test.{ts,tsx}'],
