@@ -9,8 +9,12 @@
     "dev": "pnpm --filter sandwichts-demo dev"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.10.0",
+    "@types/react": "^18.3.31",
     "happy-dom": "^15.11.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"
