@@ -17,3 +17,23 @@ export {
 } from './display';
 export { createSandbox, DEFAULT_TIMEOUT_MS, DEFAULT_MAX_ENTRY_CHARS } from './sandbox/host';
 export { WORKER_RUNTIME_SOURCE } from './sandbox/workerSource';
+export {
+    runCodeModeLoop,
+    buildSystemMessage,
+    MAX_CODE_MODE_ITERATIONS,
+    type AgentClientLike,
+    type CodeModeLoopDeps,
+    type LoopResult,
+} from './loop/runLoop';
+export { messageContentToString, extractFinalAssistantText } from './loop/messageText';
+export {
+    createCodeModeSession,
+    buildSystemContext,
+    buildApiSignatures,
+    buildValidatedHandlers,
+    type CodeModeSession,
+    type CodeModeSessionConfig,
+    type CodeModePromptConfig,
+} from './session';
+export { remoteTool, DEFAULT_REMOTE_TOOL_ENDPOINT, type RemoteToolOptions } from './tools/remoteTool';
+export { shallowValidateArgs } from './tools/validate';
