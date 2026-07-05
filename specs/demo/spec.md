@@ -3,7 +3,7 @@
 Requirement prefix: `SW-`. App: `apps/demo` (`sandwichts-demo`). Core spec: [../core/spec.md](../core/spec.md).
 
 ### SW-DEMO-E2E: End-to-end extraction proof
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** e2e / manual (procedure below; `?mock=1` flows are Playwright-able)
 
 The TaskBoard demo shall drive a kanban board (columns, colored cards, board theme)

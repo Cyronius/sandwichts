@@ -3,7 +3,7 @@
 Requirement prefix: `SW-`. Package: `@sandwichts/server`. Core spec: [../core/spec.md](../core/spec.md).
 
 ### SW-TOOL-ENDPOINT: Remote-tool execution endpoint
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `createToolEndpoint(tools)` shall return a WHATWG `(req: Request) => Promise<Response>`
@@ -16,7 +16,7 @@ and returns its result as JSON. Handler throws → `{ ok:false, error }` (500). 
 - unknown tool → 404 envelope; handler throw → 500 envelope; GET → 405
 
 ### SW-AGUI-BACKEND: Minimal AG-UI agent backend (OpenAI-compatible upstream)
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** integration (mocked upstream fetch) + e2e via demo
 
 `createAguiBackend({ model, baseUrl?, apiKey?, emitScriptEvents? })` shall return a WHATWG

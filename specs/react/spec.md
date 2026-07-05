@@ -3,7 +3,7 @@
 Requirement prefix: `SW-`. Package: `@sandwichts/react`. Core spec: [../core/spec.md](../core/spec.md).
 
 ### SW-REACT-CHAT: useCodeModeChat hook
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit (happy-dom + fake AgentClient + stub sandbox)
 
 `useCodeModeChat(config)` shall own one `CodeModeSession` (created lazily, disposed on
@@ -19,7 +19,7 @@ across the whole multi-iteration loop), `send`, `abort`, `error`, `lastTranscrip
 - unmount disposes the session (sandbox iframe removed)
 
 ### SW-REACT-HIDE: Code hiding in chat display
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 DisplayMessages shall carry `hasProse` (via `hasVisibleProse`) and `codeBlocks` (via
@@ -33,7 +33,7 @@ blocks are available for a developer code-peek disclosure. Transcript feedback m
 - transcript user-turns from the loop are absent from messages
 
 ### SW-REACT-ABORT: Abort control
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `abort()` shall stop the loop (session reason `aborted`), reset `running` to false, and

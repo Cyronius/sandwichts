@@ -1,6 +1,6 @@
 # SandwichTS Core — Canonical Spec
 
-Requirement prefix: `SW-`. Home repo: `frontend-code-mode` (this repo). Package: `@sandwichts/core`.
+Requirement prefix: `SW-`. Home repo: `sandwichts` (this repo). Package: `@sandwichts/core`.
 
 SandwichTS is a browser-native CodeAct engine extracted from lm-admin's Mobi code mode
 (`lm-admin` branch `mobi_code_mode`, `React/Components/Builder/mobi/codeMode/`): instead of
@@ -13,7 +13,7 @@ the model answers in prose. The LLM transport is `@itkennel/lm-ag-ui`'s `AgentCl
 ---
 
 ### SW-EXTRACT: Code block extraction
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `extractCode(text)` shall return the trimmed body of the FIRST ```js or ```javascript
@@ -29,7 +29,7 @@ block, or is nullish. A `null` return signals the loop to stop (final answer).
 - backtick template literals in the body survive verbatim
 
 ### SW-JSAPI: JS API surface rendering
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `buildJsApi(tools)` shall render each tool definition (name, description, JSON-schema
@@ -44,7 +44,7 @@ string/number/boolean/Array<item>/Object; enums render as a quoted union; requir
 - empty map → `{ signatures: '', apiNames: [] }`
 
 ### SW-TRANSCRIPT: Execution transcript feedback
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `buildTranscriptMessage(transcript, error, iteration, availableFunctions)` shall render each
@@ -60,7 +60,7 @@ fix the problem). The message role is `user` and its id starts with `code_result
 - error present → `Script error:` line + corrective instruction; success → continuation instruction
 
 ### SW-UNKNOWN-FN: Unknown-function self-correction hint
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 When the script error matches `/ is not defined\b/` or `/^Unknown function:/` and the
@@ -76,7 +76,7 @@ functions: <sorted list>` error result (not a thrown host error).
 - success transcript → no hint; empty list → no hint
 
 ### SW-HIDE: Display content helpers
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `stripFencedCode` shall remove complete fenced blocks (any language) AND a trailing
@@ -91,7 +91,7 @@ try/catch-guarded, false by default.
 - nullish input → '' / false / []
 
 ### SW-CODE-LOG: Console logging of code emissions
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `logCodeEmission(code, iteration)` shall log the code to the console (grouped under an
@@ -107,7 +107,7 @@ has non-null code, immediately after code is resolved (SW-CODE-CHANNEL).
 - localStorage throwing (e.g. sandboxed context) → returns false, does not throw
 
 ### SW-PROMPT: System prompt composition
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `composeSystemPrompt(parts)` shall join, separated by blank lines: the driving guide
@@ -123,7 +123,7 @@ provided, consumer `rules` blocks in order, and the serialized app context last.
 - custom contextName appears in the binding line verbatim
 
 ### SW-SANDBOX: Origin-isolated script execution
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** e2e (browser primitives — verified via the demo playground; see tests/sandbox.manual.test.ts)
 
 `createSandbox()` shall execute a script inside a Web Worker spawned (per run, from a Blob
@@ -142,7 +142,7 @@ and resolves with a timeout error the loop can resubmit. `dispose()` removes the
 - two sandboxes running concurrently do not cross-deliver messages (MessageChannel isolation)
 
 ### SW-SANDBOX-HARDENING: Sandbox message-security posture
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** manual (inspection + playground; documented in tests/sandbox.manual.test.ts)
 
 Vs the lm-admin implementation the host shall: pin iframe→parent `postMessage` targetOrigin
@@ -154,7 +154,7 @@ deep-freeze the context object before binding, and cap each transcript entry's s
 size before posting.
 
 ### SW-LOOP: Multi-turn code-mode loop
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit (fake AgentClient + stub sandbox)
 
 The loop shall, per iteration: `startNewRun()`; `runAgent(conversation, [], subscriber,
@@ -172,7 +172,7 @@ also terminates the in-flight worker).
 - loop deps expose no shared-store writer
 
 ### SW-CODE-CHANNEL: Code delivery channel
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 The loop shall take the iteration's code from an AG-UI CUSTOM event named
@@ -184,7 +184,7 @@ The loop shall take the iteration's code from an AG-UI CUSTOM event named
 - no custom event → fenced block executes; neither → loop ends
 
 ### SW-CONTEXT: Read-only context binding
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit (binding name plumbed) + e2e (frozen enforcement, via SW-SANDBOX)
 
 `context()` shall be re-invoked per iteration (so the snapshot reflects prior edits) and its
@@ -197,7 +197,7 @@ so the model reads exactly what it was shown.
 - custom contextName reaches the worker start message
 
 ### SW-EVENTS: Session event stream
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit
 
 `createCodeModeSession(...).send(text)` shall emit, in order per iteration:
@@ -212,7 +212,7 @@ with reason `final-answer` | `max-iterations` | `aborted`. `send` resolves with
 - session.history grows across sends (multi-turn) and contains transcript user messages
 
 ### SW-REMOTE-TOOL: Remote (server-executed) tools
-**Applies to:** frontend-code-mode
+**Applies to:** sandwichts
 **Test category:** unit (injected fetch)
 
 `remoteTool({ name, description, parameters, endpoint, headers?, fetchImpl? })` shall
@@ -228,7 +228,7 @@ resubmit a useful error. Remote tools render into the prompt under a
 - buildJsApi output groups remote tools under the group header (via session prompt assembly)
 
 ### SW-BACKEND-GATE: Backend native-tool gate (integration contract)
-**Applies to:** frontend-code-mode (documented), consumer backends (enforced)
+**Applies to:** sandwichts (documented), consumer backends (enforced)
 **Test category:** manual (documented contract; enforced per-backend)
 
 Every loop run shall send `forwardedProps.codeMode = true`. AG-UI backends SHOULD clear
