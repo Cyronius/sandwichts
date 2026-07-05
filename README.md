@@ -6,9 +6,7 @@ layers of the sandwich: the **iframe** (opaque origin), the **host** (your app, 
 real tool handlers), and the **Web Worker** (kill-switch executing the generated code).
 An execution transcript feeds back to the model until it answers in prose.
 
-Extracted from lm-admin's proven Mobi code mode (`mobi_code_mode` branch). Server-side
-CodeAct exists elsewhere (smolagents, Cloudflare Code Mode, Anthropic's MCP code
-execution); SandwichTS targets the case they don't: **copilots whose tools mutate
+SandwichTS targets the case they don't: **copilots whose tools mutate
 client-side state** — editors, dashboards, boards — where one generated script replaces
 dozens of tool-call round trips and intermediate data never transits the model.
 
