@@ -23,6 +23,7 @@
 import type { AgentSubscriber, Message } from '@ag-ui/client';
 import { extractCode } from './extractCode';
 import { extractFinalAssistantText } from './messageText';
+import { logCodeEmission } from '../logCode';
 import { buildTranscriptMessage } from './transcript';
 import type { CodeModeEvent, FinalReason, Sandbox, SandboxHandlers } from '../types';
 
@@ -153,6 +154,7 @@ export async function runCodeModeLoop(
         const customCode = takeCustomCode?.() || null;
         const code = customCode ?? extractCode(lastText);
         onEvent?.({ type: 'assistant-message', text: lastText, code });
+        if (code) logCodeEmission(code, iteration);
 
         if (isAborted?.()) { reason = 'aborted'; break; }
         if (!code) { reason = 'final-answer'; break; } // prose → final answer

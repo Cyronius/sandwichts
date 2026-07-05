@@ -15,6 +15,7 @@ export {
     extractFencedBlocks,
     isDevCodeRevealEnabled,
 } from './display';
+export { isDevCodeLogEnabled, logCodeEmission } from './logCode';
 export { createSandbox, DEFAULT_TIMEOUT_MS, DEFAULT_MAX_ENTRY_CHARS } from './sandbox/host';
 export { WORKER_RUNTIME_SOURCE } from './sandbox/workerSource';
 export {

@@ -90,6 +90,22 @@ try/catch-guarded, false by default.
 - unclosed streaming block → no prose, and extractFencedBlocks captures it
 - nullish input → '' / false / []
 
+### SW-CODE-LOG: Console logging of code emissions
+**Applies to:** frontend-code-mode
+**Test category:** unit
+
+`logCodeEmission(code, iteration)` shall log the code to the console (grouped under an
+iteration-labeled collapsed group) only when the dev flag is enabled, and be a no-op
+otherwise. `isDevCodeLogEnabled()` reads localStorage key `sandwichLogCode`, try/catch
+guarded, false by default. The loop shall call `logCodeEmission` once per iteration that
+has non-null code, immediately after code is resolved (SW-CODE-CHANNEL).
+
+**Acceptance criteria:**
+- flag off (default) → no `console.*` call
+- flag on → one `console.groupCollapsed` + one `console.log(code)` + `console.groupEnd()`
+- code is null (final-answer iteration) → no call regardless of flag
+- localStorage throwing (e.g. sandboxed context) → returns false, does not throw
+
 ### SW-PROMPT: System prompt composition
 **Applies to:** frontend-code-mode
 **Test category:** unit
