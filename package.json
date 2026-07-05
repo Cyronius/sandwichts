@@ -1,5 +1,5 @@
 {
-  "name": "sandwichts-monorepo",
+  "name": "sandwichts",
   "private": true,
   "type": "module",
   "scripts": {
