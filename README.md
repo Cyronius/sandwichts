@@ -6,9 +6,7 @@ layers of the sandwich: the **iframe** (opaque origin), the **host** (your app, 
 real tool handlers), and the **Web Worker** (kill-switch executing the generated code).
 An execution transcript feeds back to the model until it answers in prose.
 
-Extracted from lm-admin's proven Mobi code mode (`mobi_code_mode` branch). Server-side
-CodeAct exists elsewhere (smolagents, Cloudflare Code Mode, Anthropic's MCP code
-execution); SandwichTS targets the case they don't: **copilots whose tools mutate
+SandwichTS targets the case they don't: **copilots whose tools mutate
 client-side state** — editors, dashboards, boards — where one generated script replaces
 dozens of tool-call round trips and intermediate data never transits the model.
 
@@ -114,10 +112,4 @@ by a unit test (`specs/*/tests/*.test.ts`, Vitest) or a documented e2e procedure
 (`sandbox.manual.test.ts`, `specs/demo/spec.md`; `specs/demo/tests/taskboard.e2e.py` is a
 Playwright script for the deterministic `?mock=1` flows).
 
-## Migrating from lm-admin code mode
 
-- `sandboxHost.runScript(code, handlers, ctx, timeoutMs)` → `runScript(code, handlers, ctx, { timeoutMs, contextName })`; handlers now return **objects**, not JSON envelope strings (wrap legacy handlers with `JSON.parse`).
-- `runCodeModeLoop(deps)` → `createCodeModeSession(config)` — the session owns prompt composition (`useCodeMode`'s Mobi blocks become `prompt.rules`), history, and events; `CODE_RESULT_ID_PREFIX` display filtering is gone (transcripts never reach display state).
-- `courseContext` is now the configurable `contextName`.
-
-License: TBD before any OSS release (internal-first).
