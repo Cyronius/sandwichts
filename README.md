@@ -1,14 +1,21 @@
 # SandwichTS
 
-**Browser-native CodeAct for web-app copilots.** Instead of native LLM tool calling, the
-model writes one ```js block that executes in an origin-isolated browser sandbox — the
-layers of the sandwich: the **iframe** (opaque origin), the **host** (your app, owning the
-real tool handlers), and the **Web Worker** (kill-switch executing the generated code).
-An execution transcript feeds back to the model until it answers in prose.
+**Give an in-app copilot real, mutating access to your app's live client-side state — safely.**
 
-SandwichTS targets the case they don't: **copilots whose tools mutate
-client-side state** — editors, dashboards, boards — where one generated script replaces
-dozens of tool-call round trips and intermediate data never transits the model.
+Most tool-calling is built for stateless, server-side actions: one call, one round trip, one JSON result.
+That breaks down for copilots embedded in editors, dashboards, and boards, where the "tools" are direct
+mutations of state that only exists in the browser, and a single user request can need dozens of them
+chained together. Native tool-calling pays a model round trip for every one — and every intermediate result,
+even ones the model never needs to reason about, flows back through the model's context.
+
+SandwichTS has the model write one JS script that calls your tools directly and returns only the final
+transcript. The idea of a model writing code instead of calling tools one at a time isn't new (see CodeAct) —
+what's different here is the threat model: this isn't about containing generated code in a server-side
+VM, it's about letting generated code invoke functions with full application privilege against live,
+mutating client state, while the code itself can't touch anything else — no DOM, no storage, no network,
+no shared origin. Three layers do that: the **iframe** (opaque origin), the **host** (your app, owning the
+real tool handlers), and the **Web Worker** (kill-switch executing the generated code) — the layers of the
+sandwich. An execution transcript feeds back to the model until it answers in prose.
 
 ```
 ┌─ your app (host) ──────────────────────────────────────────────┐
@@ -23,6 +30,25 @@ dozens of tool-call round trips and intermediate data never transits the model.
 │  └───────────────────── worker.terminate() on watchdog ──────┘ │
 └────────────────────────────────────────────────────────────────┘
 ```
+
+## Why
+
+- **One script, not N round trips.** A task touching a dozen cards/cells/nodes is one generated script and
+  one execution — not a dozen model turns. Lower latency, lower cost, and the intermediate values between
+  "read current state" and "compute the change" never re-enter the model's context.
+- **Works with your existing backend, unmodified.** The client sends an empty native tool list and a
+  `codeMode` flag. If your AG-UI backend ignores that, the model's ```js block still gets extracted from its
+  prose reply and executed — no backend change required. A backend that wants a faster path can instead emit
+  a `code_mode.script` CUSTOM event; same client either way.
+- **Self-correcting, not just self-executing.** An undefined tool name, a bad argument, or a failed remote
+  tool doesn't throw and abort the run — it comes back as a transcript entry the model sees on its next turn
+  (`Unknown function: X. Available functions: ...`), so most mistakes get fixed inside the same run instead
+  of surfacing to the user.
+- **No agent framework, no vendor lock-in.** `@sandwichts/core` has zero runtime dependencies
+  (`@ag-ui/client` is types-only); `@sandwichts/server` is a couple of WHATWG handlers over any
+  OpenAI-compatible Chat Completions API (OpenAI, Ollama, LM Studio, vLLM, OpenRouter).
+- **Code is an implementation detail.** The default chat UI hides the generated script; a dev-only "code
+  peek" flag reveals it. Users see a copilot, not a code interpreter.
 
 ## Packages
 
@@ -87,10 +113,10 @@ with an unmodified backend.
 
 ## Security model
 
-The sandbox constrains **which functions run** and **that arbitrary JS can't touch the
-app** — it does not constrain what your whitelisted handlers do; they run with full app
-privilege, so validate arguments (core adds a shallow schema check) and scope the tool
-surface deliberately.
+The sandbox's job is to give the *generated code* as close to zero privilege as possible —
+it can only call the whitelisted stub functions you hand it. The *handlers* those stubs call
+run with full app privilege against real, live state, so validate their arguments (core adds
+a shallow schema check) and scope the tool surface deliberately.
 
 Guarantees: opaque-origin iframe (`sandbox="allow-scripts"`, no `allow-same-origin`) — no
 app DOM/cookies/storage; per-run blob-URL worker killed by a watchdog; per-run
