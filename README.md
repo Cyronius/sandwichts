@@ -2,6 +2,21 @@
 
 **Give an in-app copilot real, mutating access to your app's live client-side state — safely.**
 
+## In plain English
+
+- **What it is.** A toolkit for embedding an AI chat assistant in a web app that can
+  actually *do things* — add a card, move it, rename a column — not just answer
+  questions.
+- **The problem it solves.** Normally, an assistant has to check in with the model
+  after every single action, which is slow when a task needs many steps chained
+  together (e.g. "reorganize my whole board"). SandwichTS has the model write one
+  small script that performs all the steps in one run, and only the final result
+  comes back.
+- **The catch.** Letting AI-generated code run with real power over your live app is
+  risky if it isn't contained. Most of the engineering here goes into safely
+  containing that code so it can only call the specific actions you've explicitly
+  allowed — nothing else.
+
 Most tool-calling is built for stateless, server-side actions: one call, one round trip, one JSON result.
 That breaks down for copilots embedded in editors, dashboards, and boards, where the "tools" are direct
 mutations of state that only exists in the browser, and a single user request can need dozens of them
