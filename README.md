@@ -153,4 +153,8 @@ by a unit test (`specs/*/tests/*.test.ts`, Vitest) or a documented e2e procedure
 (`sandbox.manual.test.ts`, `specs/demo/spec.md`; `specs/demo/tests/taskboard.e2e.py` is a
 Playwright script for the deterministic `?mock=1` flows).
 
+## License
+
+MIT © Cyrus Attoun. See [LICENSE](LICENSE).
+
 

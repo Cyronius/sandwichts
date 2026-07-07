@@ -2,6 +2,7 @@
   "name": "@sandwichts/server",
   "version": "0.1.0",
   "description": "Server helpers for SandwichTS: remote-tool endpoint and a minimal AG-UI SSE agent backend (Anthropic).",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

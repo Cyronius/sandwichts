@@ -1,6 +1,7 @@
 {
   "name": "sandwichts",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm -r --filter \"./packages/*\" build",

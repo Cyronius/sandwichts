@@ -2,6 +2,7 @@
   "name": "@sandwichts/core",
   "version": "0.1.0",
   "description": "Browser-native CodeAct engine: LLM-generated JavaScript executed in an iframe+worker sandbox with a whitelisted tool bridge.",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

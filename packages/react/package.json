@@ -2,6 +2,7 @@
   "name": "@sandwichts/react",
   "version": "0.1.0",
   "description": "React bindings for SandwichTS code-mode chat: event-driven chat state, code hiding, dev code peek.",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
